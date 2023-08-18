@@ -24,7 +24,7 @@ class SongsHandler{
     async getSongsHandler(request, res){
 
         try {
-            const {title = ''} = cint;
+            const {title = ''} = request.query.title;
                 console.log(title);
                 const songs = await this._service.getSongsByTitle(title);
                 return{
