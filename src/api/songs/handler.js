@@ -24,17 +24,14 @@ class SongsHandler{
     async getSongsHandler(request, res){
 
         try {
-            const {title = ''} = request.query.title;
-                console.log(title);
-                const songs = await this._service.getSongsByTitle(title);
+            const {title = '', performer = ''} = request.query;
+                const songs = await this._service.getSongsByTitle(title, performer);
                 return{
                     status: 'success',
                     data:{
-                    songs,
+                        songs,
                     },
-                }
-           
-        
+            }
         } catch (error) {
             if(error instanceof ClientError){
                 const response = res.response({
@@ -44,9 +41,8 @@ class SongsHandler{
                 response.code(error.statusCode);
                 return response;
             }
-
-            try {
-                const songs = await this._service.getSongs();
+            
+            const songs = await this._service.getSongs();
                 return{
                     status: 'success',
                     data:{
@@ -54,16 +50,6 @@ class SongsHandler{
                     },
                 }
             
-            } catch (error) {
-                if(error instanceof ClientError){
-                    const response = res.response({
-                        status: 'fail',
-                        message: error.message,
-                    });
-                    response.code(error.statusCode);
-                    return response;
-                }
-            }
         }
         
     }

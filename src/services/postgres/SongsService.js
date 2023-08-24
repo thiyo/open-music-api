@@ -28,16 +28,14 @@ class SongsService{
       return rows;
     }
     
-
-    async getSongsByTitle(title) {
+    async getSongsByTitle(title, performer) {
       const query = {
-        text: 'SELECT * FROM songs WHERE title LIKE $1',
-        values: [`%${title}%`],
+        text: "SELECT id, title, performer FROM songs WHERE upper(title) LIKE upper('%' || $1 || '%') AND upper(performer) LIKE upper('%' || $2 || '%') ",
+        values: [title, performer],
       };
       const result = await this._pool.query(query);
       return result.rows;
     }
-
 
     async getSongById(id) {
         const query = {
