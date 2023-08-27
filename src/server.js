@@ -29,11 +29,17 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const TokenManager = require('./tokenize/tokenManager');
 const AuthenticationsValidator=require('./api/authentications/validator');
 
+//collaborations
+const collaborations = require('./api/collaborations');
+const CollaborationsValidator = require('./api/collaborations/validator');
+const CollaborationsService = require('./services/postgres/CollaborationsService');
+
 
 const init =async() =>{
     const albumsService = new AlbumsService();
     const songsService = new SongsService();
     const usersService = new UsersService();
+    const collaborationsService = new CollaborationsService();
     const playlistsService = new PlaylistsService();
     const authenticationsService = new AuthenticationsService();
 
@@ -66,7 +72,7 @@ const init =async() =>{
         validate: (artifacts) => ({
         isValid: true,
         credentials: {
-            userId: artifacts.decoded.payload.userId,
+            userId: artifacts.decoded.payload.id,
         },
         }),
     });
@@ -110,14 +116,23 @@ const init =async() =>{
             validator: PlaylistsValidator,
         },
     },
+    {
+      plugin: collaborations,
+      options: {
+        collaborationsService,
+        playlistsService,
+        usersService,
+        validator: CollaborationsValidator,
+      },
+    },
     ]);
 
-    server.ext('onPreResponse', (request, h) => { 
+    server.ext('onPreResponse', (request, res) => { 
         // mendapatkan konteks response dari request 
         const { response } = request; 
         if (response instanceof ClientError) { 
         // membuat response baru dari response toolkit sesuai kebutuhan error handling 
-        const newResponse = h.response({ 
+        const newResponse = res.response({ 
             status: 'fail', 
             message: response.message, 
         }); 

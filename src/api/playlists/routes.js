@@ -35,7 +35,7 @@ const routes = (handler) => [
     {
         method: 'GET',
         path: '/playlists/{playlistId}/songs',
-        handler: (request, res) => handler.getSongPlaylistByIdHandler(request, res),
+        handler: (request) => handler.getSongPlaylistByIdHandler(request),
         options: {
           auth: 'songapp_jwt',
         },
@@ -43,7 +43,7 @@ const routes = (handler) => [
     {
         method: 'DELETE',
         path: '/playlists/{playlistId}/songs',
-        handler: (request, res) => handler.deleteSongPlaylistByIdHandler(request, res),
+        handler: (request) => handler.deleteSongFromPlaylistHandler(request),
         options: {
           auth: 'songapp_jwt',
         },

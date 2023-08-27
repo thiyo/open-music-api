@@ -20,6 +20,14 @@ class NotFoundError extends ClientError{
     }
 }
 
+
+class ForbiddenError extends ClientError {
+    constructor(message) {
+      super(message, 403);
+      this.name = 'ForbiddenError';
+    }
+  }
+
 class AuthenticationError extends ClientError{
     constructor(message){
         super(message, 401);
@@ -34,4 +42,4 @@ class AuthorizationError extends ClientError {
   }
 }
 
-module.exports = {ClientError, InvariantError, NotFoundError, AuthenticationError, AuthorizationError};
+module.exports = {ClientError, InvariantError, NotFoundError, ForbiddenError, AuthenticationError, AuthorizationError};

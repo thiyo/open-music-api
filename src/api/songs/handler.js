@@ -65,18 +65,6 @@ class SongsHandler{
             };
     }
 
-    
-    // async getSongByKeywordHandler(request, res){
-    //     const {kw} = request.query.keyword;
-    //     const songs = await this._service.getSongsByKeyword(kw);
-    //     return{
-    //         status: 'success',
-    //         data:{
-    //             songs,
-    //         },
-    //     };
-    // }
-
     async putSongByIdHandler(request, res){
             this._validator.validateSongPayload(request.payload);
             const {title, year, genre, performer, duration, albumId} = request.payload;
