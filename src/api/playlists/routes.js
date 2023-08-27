@@ -35,7 +35,7 @@ const routes = (handler) => [
     {
         method: 'GET',
         path: '/playlists/{playlistId}/songs',
-        handler: (request) => handler.getSongPlaylistByIdHandler(request),
+        handler: (request) => handler.getSongFromPlaylistHandler(request),
         options: {
           auth: 'songapp_jwt',
         },

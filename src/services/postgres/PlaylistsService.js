@@ -1,7 +1,6 @@
 const { nanoid } = require("nanoid");
 const { Pool } = require("pg");
-const { InvariantError, NotFoundError, AuthenticationError, AuthorizationError } = require("../../exceptions");
-const mapDBToModel = require("../../utils");
+const { NotFoundError, AuthorizationError } = require("../../exceptions");
 
 class PlaylistsService {
     constructor(collaborationsService){
@@ -31,7 +30,7 @@ class PlaylistsService {
             text: `SELECT playlists.id, playlists.name, playlists.owner
             FROM playlists
             LEFT JOIN collaborations ON collaborations.playlist_id = playlists.id
-            WHERE playlists.owner = $1 OR collaborations.playlist_id = $1
+            WHERE playlists.owner = $1 OR collaborations.user_id = $1
             GROUP BY playlists.id`,
             values: [owner],
         };
