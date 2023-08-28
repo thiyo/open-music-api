@@ -130,16 +130,35 @@ const init =async() =>{
     server.ext('onPreResponse', (request, res) => { 
         // mendapatkan konteks response dari request 
         const { response } = request; 
-        if (response instanceof ClientError) { 
-        // membuat response baru dari response toolkit sesuai kebutuhan error handling 
-        const newResponse = res.response({ 
-            status: 'fail', 
-            message: response.message, 
-        }); 
-        newResponse.code(response.statusCode); 
-        return newResponse; } 
+
+        if(response instanceof Error) {
+
+            if (response instanceof ClientError) { 
+            // membuat response baru dari response toolkit sesuai kebutuhan error handling 
+            const newResponse = res.response({ 
+                status: 'fail', 
+                message: response.message, 
+            }); 
+            newResponse.code(response.statusCode); 
+            return newResponse; 
+            } 
+
+            // mempertahankan penanganan client error oleh hapi secara native, seperti 404, etc.
+            if (!response.isServer) {
+                return res.continue;
+            }
+
+            // penanganan server error sesuai kebutuhan
+            const newResponse = res.response({
+                status: 'error',
+                message: 'terjadi kegagalan pada server kami',
+            });
+            newResponse.code(500);
+            return newResponse;
+        }   
+
         // jika bukan ClientError, lanjutkan dengan response sebelumnya (tanpa terintervensi) 
-        return response.continue || response; 
+        return res.continue;
     });
     
     await server.start();

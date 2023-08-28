@@ -64,10 +64,13 @@ class PlaylistsHandler{
             message: 'Lagu berhasil ditambahkan ke playlist',
         });
         response.code(201);
+        
+        await this._service.addPlaylistActivities(playlistId, songId, owner, 'add');
+
         return response;
     }
 
-    async getSongFromPlaylistHandler(request){
+    async getSongFromPlaylistHandler(request, res){
         const { playlistId } = request.params;
         const { userId: owner } = request.auth.credentials;
 
@@ -78,7 +81,7 @@ class PlaylistsHandler{
         const playlist = await this._service.getPlaylistById(playlistId);
         const songs = await this._service.getSongsPlaylistById(playlistId);
 
-        return {
+        const response = res.response({
             status: 'success',
             data: {
                 playlist: {
@@ -86,10 +89,13 @@ class PlaylistsHandler{
                     songs,
                 },
             },
-        };
+        });
+
+        return response;
+        
     }
 
-    async deleteSongFromPlaylistHandler(request){
+    async deleteSongFromPlaylistHandler(request, res){
         const { playlistId } = request.params;
         const { songId } = this._validator.validatePostPlaylistSongPayload(request.payload);
         const { userId: owner } = request.auth.credentials;
@@ -98,10 +104,31 @@ class PlaylistsHandler{
         
         await this._service.deleteSongFromPlaylist(playlistId, songId);
         
-        return {
+        const response = res.response({
             status: 'success',
             message: 'Lagu berhasil dihapus dari playlist',
+        });
+
+        await this._service.addPlaylistActivities(playlistId, songId, owner, 'delete');
+
+        return response;
+    }
+
+    async getPlaylistActivitiesHandler(request, res) {
+        const { playlistId } = request.params;
+        const { userId: owner } = request.auth.credentials;
+        
+        await this._service.verifyPlaylistAccess(playlistId, owner);
+
+        const activities = await this._service.getPlaylistActivities(playlistId);
+        return{
+            status: 'success',
+            data: {
+                playlistId: playlistId,
+                activities,
+            },
         };
+
     }
 
 }
