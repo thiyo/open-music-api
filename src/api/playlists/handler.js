@@ -1,5 +1,3 @@
-const { ForbiddenError, NotFoundError } = require("../../exceptions");
-
 class PlaylistsHandler{
     constructor(service, validator){
         this._service = service;

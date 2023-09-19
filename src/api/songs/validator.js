@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { InvariantError } = require('../../exceptions');
+const { InvariantError } = require('../../commons/exceptions');
 
 const SongsValidator = {
   validateSongPayload: (payload) => {

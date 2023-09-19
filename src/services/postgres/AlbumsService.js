@@ -1,6 +1,7 @@
 const { Pool } = require("pg");
-const { InvariantError, NotFoundError } = require("../../exceptions");
+const { InvariantError, NotFoundError } = require("../../commons/exceptions");
 const { nanoid } = require("nanoid");
+const { config } = require("../../commons/config");
 
 class AlbumsService{
     constructor(){
@@ -29,17 +30,21 @@ class AlbumsService{
 
     async getAlbumById(id) {
         const query = {
-          text: 'SELECT id, name, year FROM albums WHERE albums.id = $1',
+          text: 'SELECT id, name, year, cover_file FROM albums WHERE albums.id = $1',
           values: [id],
         };
     
         const { rows } = await this._pool.query(query);
     
         if (!rows.length) {
-          throw new NotFoundError('Album tidaditemukan', 404);
+          throw new NotFoundError('Album tidak ditemukan', 404);
         }
-
-        return rows[0];
+        return {
+          id: rows[0].id,
+          name: rows[0].name,
+          year: rows[0].year,
+          coverUrl: rows[0].cover_file !== null ? `${config.server.generateAlbumArtUrl(id)}` : null,
+        };
       }
 
     async getAlbumByIdWithSongs(id) {
@@ -56,6 +61,14 @@ class AlbumsService{
       return rows;
   }
 
+  async setCoverUrlToAlbum(albumId, filename) {
+    const query = {
+      text: 'UPDATE albums SET cover_file = $1 WHERE id = $2 RETURNING id',
+      values: [filename, albumId],
+    };
+
+    await this._pool.query(query);
+  }
     async editAlbumById(id, { name, year }) {
     const query = {
       text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
@@ -81,5 +94,42 @@ class AlbumsService{
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan');
     }
   }
+
+  async isAlbumExist(id) {
+    const query = {
+      text: 'SELECT id FROM albums WHERE id = $1',
+      values: [id],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    
+    if (!rows.length) {
+      throw new NotFoundError('Album tidak ditemukan', 404);
+    }
+    return {
+      id: rows[0].id,
+      name: rows[0].name,
+      year: rows[0].year,
+      coverUrl: rows[0].cover_file !== null ? `${config.server.generateAlbumArtUrl(id)}` : null,
+    };
+  }
+
+  async getCoverAlbumById(id) {
+    const query = {
+      text: 'SELECT cover_file FROM albums WHERE id = $1',
+      values: [id],
+    };
+
+    const { rows } = await this._pool.query(query);
+
+    if (!rows.length) {
+      return null;
+    }
+
+    return rows[0].cover_file;
+  }
 }
+
+
 module.exports = AlbumsService;

@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { InvariantError } = require('../../exceptions');
+const { InvariantError } = require('../../commons/exceptions');
 
 const AlbumsValidator = {
   validateAlbumPayload: (payload) => {
@@ -16,7 +16,28 @@ const AlbumsValidator = {
     }
 
     return result.value;
-  }
+  },
+  
+  validatePutAlbumCoverPayload: (payload) => {
+    const scheme = Joi.object({
+      cover: Joi.object({
+        hapi: Joi.object({
+          filename: Joi.string().required(),
+          headers: Joi.object({
+            'content-type': Joi.string().valid('image/apng', 'image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/webp').required(),
+          }).unknown(),
+        }).unknown(),
+      }).unknown().required(),
+    });
+
+    const result = scheme.validate(payload);
+
+    if (result.error) {
+      throw new InvariantError(result.error.message);
+    }
+
+    return result.value;
+  },
 }
 
 module.exports = AlbumsValidator;

@@ -1,6 +1,6 @@
 const { nanoid } = require("nanoid");
 const { Pool } = require("pg");
-const { NotFoundError, AuthorizationError } = require("../../exceptions");
+const { NotFoundError, AuthorizationError } = require("../../commons/exceptions");
 
 class PlaylistsService {
     constructor(collaborationsService){

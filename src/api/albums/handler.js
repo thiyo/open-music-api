@@ -1,7 +1,10 @@
+const { config } = require("../../commons/config");
+
 class AlbumsHandler{
-    constructor(service, validator){
+    constructor(service, validator, storageService){
         this._service = service;
         this._validator = validator;
+        this._storageService = storageService;
     }
 
     async postAlbumHandler(request, res){
@@ -37,30 +40,28 @@ class AlbumsHandler{
             return{
                 status: 'success',
                 data: {
-                   album:{
-                     id: album.id,
-                     name: album.name,
-                     year: album.year,
-                     songs,
-                   }
+                    album:{
+                        ...album,
+                        songs,
+                    }
                 },
             };
     }
 
-    async getAlbumByIdWithSongsHandler(request){
-            const {id} = request.params;
-            const album = await this._service.getAlbumById(id);
-            const songs = await this._service.getAlbumByIdWithSongs(id);
-            return{
-                status: 'success',
-                data: {
-                   album:{
-                     ...album,
-                     songs,
-                   }
-                },
-            };
-    }
+    // async getAlbumByIdWithSongsHandler(request){
+    //         const {id} = request.params;
+    //         const album = await this._service.getAlbumById(id);
+    //         const songs = await this._service.getAlbumByIdWithSongs(id);
+    //         return{
+    //             status: 'success',
+    //             data: {
+    //                album:{
+    //                  ...album,
+    //                  songs,
+    //                }
+    //             },
+    //         };
+    // }
 
     async putAlbumByIdHandler(request){
             this._validator.validateAlbumPayload(request.payload);
@@ -81,6 +82,43 @@ class AlbumsHandler{
                 status: 'success',
                 message: 'Album berhasil dihapus',
             };
+    }
+
+    async postAlbumCoverByIdHandler(request, res){
+        const {id: albumId} = request.params;
+        const { cover } = this._validator.validatePutAlbumCoverPayload(request.payload);
+        const fileExtension = cover.hapi.filename.split('.').pop();
+
+        const filename = await this._storageService.saveAlbumArt(albumId, cover, fileExtension);
+
+        await this._service.setCoverUrlToAlbum(albumId, filename);
+           
+        const response = res.response({
+            status: 'success',
+            message: 'Sampul berhasil diunggah',
+        });
+        response.code(201);
+        return response;
+    }
+
+    async getAlbumCoverByIdHandler(request, res) {
+        const { id: albumId } = request.params;
+    
+        await this._service.isAlbumExist(albumId);
+    
+        const coverFile = await this._service.getCoverAlbumById(albumId);
+    
+        if (!coverFile) {
+          throw new NotFoundError('cover tidak ditemukan');
         }
+    
+        const filePath = join(config.server.imagesPublicPath, coverFile);
+
+       
+        return res.file(filePath)
+    
+        // @TODO-8: kembalikan response dengan file yang diambil dari variable `filePath`
+        // Referensi: https://www.dicoding.com/academies/271/tutorials/17753
+      }
 }
 module.exports = AlbumsHandler;

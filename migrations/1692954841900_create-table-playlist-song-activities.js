@@ -31,8 +31,8 @@ exports.up = (pgm) => {
     });
 
     
-    // memberikan constraint foreign key pada kolom playlist songs
-    pgm.addConstraint('playlist_songs', 'fk_playlist_song_activities.playlist_id_playlists.id', 'FOREIGN KEY(playlist_id) REFERENCES playlists(id) ON DELETE CASCADE');
+    // memberikan constraint foreign key pada kolom playlist songs activities
+    pgm.addConstraint('playlist_song_activities', 'fk_playlist_song_activities.playlist_id_playlists.id', 'FOREIGN KEY(playlist_id) REFERENCES playlists(id) ON DELETE CASCADE');
 };
 
 exports.down = pgm => {

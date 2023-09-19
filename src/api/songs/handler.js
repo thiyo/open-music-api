@@ -1,4 +1,4 @@
-const { ClientError } = require("../../exceptions");
+const { ClientError } = require("../../commons/exceptions");
 
 class SongsHandler{
     constructor(service, validator){
