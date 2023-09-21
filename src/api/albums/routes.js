@@ -43,6 +43,27 @@ const routes = (handler) => [
       path: '/albums/{id}/covers',
       handler: (request, res) => handler.getAlbumCoverByIdHandler(request, res),
     },
+    {
+      method: 'POST',
+      path: '/albums/{id}/likes',
+      handler: (request, res) => handler.postLikeAlbumByIdHandler(request, res),
+      options: {
+        auth: 'songapp_jwt',
+      },
+    },
+    {
+      method: 'GET',
+      path: '/albums/{id}/likes',
+      handler: (request, res) => handler.getLikeAlbumByIdHandler(request, res),
+    },
+    {
+      method: 'DELETE',
+      path: '/albums/{id}/likes',
+      handler: (request, res) => handler.deleteLikeAlbumByIdHandler(request, res),
+      options: {
+        auth: 'songapp_jwt',
+      },
+    },
 ];
 
 module.exports = routes;

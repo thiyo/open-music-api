@@ -8,6 +8,7 @@ const { ClientError } = require('./commons/exceptions');
 const albums = require('./api/albums');
 const AlbumsValidator = require('./api/albums/validator');
 const AlbumsService = require('./services/postgres/AlbumsService');
+const UserAlbumLikesService = require('./services/postgres/UserAlbumLikesService')
 
 //songs
 const songs = require('./api/songs');
@@ -40,6 +41,9 @@ const _exports = require('./api/exports');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 //storage
 const StorageService = require('./services/storages/LocalStorageService');
+//cache
+const CacheService = require('./services/redis/CacheService');
+const { config } = require('./commons/config');
 
 
 const init =async() =>{
@@ -49,12 +53,14 @@ const init =async() =>{
     const collaborationsService = new CollaborationsService();
     const playlistsService = new PlaylistsService(collaborationsService);
     const authenticationsService = new AuthenticationsService();
-    storageService = new StorageService();
+    const storageService = new StorageService();
+    const cacheService = new CacheService();
+    const userAlbumLikesService = new UserAlbumLikesService(cacheService);
 
 
     const server = Hapi.server({
-        port: process.env.PORT,
-        host: process.env.HOST,
+        port: config.server.port,
+        host: config.server.host,
         routes: {
             cors: {
                 origin:  ['*'],
@@ -97,6 +103,7 @@ const init =async() =>{
          service: albumsService,
          validator: AlbumsValidator,
          storageService,
+         userAlbumLikesService,
        },
     },
     {

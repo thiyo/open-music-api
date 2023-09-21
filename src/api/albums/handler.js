@@ -1,10 +1,11 @@
 const { config } = require("../../commons/config");
 
 class AlbumsHandler{
-    constructor(service, validator, storageService){
+    constructor(service, validator, storageService, userAlbumLikesService){
         this._service = service;
         this._validator = validator;
         this._storageService = storageService;
+        this._userAlbumLikesService = userAlbumLikesService;
     }
 
     async postAlbumHandler(request, res){
@@ -116,9 +117,67 @@ class AlbumsHandler{
 
        
         return res.file(filePath)
+    }
+
+    async postLikeAlbumByIdHandler(request, res) {
+      const { userId } = request.auth.credentials;
+        const { id: albumId } = request.params;
     
-        // @TODO-8: kembalikan response dengan file yang diambil dari variable `filePath`
-        // Referensi: https://www.dicoding.com/academies/271/tutorials/17753
-      }
+        await this._service.isAlbumExist(albumId);
+
+        const isLiked = await this._userAlbumLikesService.isUserAlreadyLikedAlbum(userId, albumId);
+        
+        if (isLiked) {
+          throw new InvariantError('Album sudah disukai');
+        }
+
+        await this._userAlbumLikesService.persistUserAlbumLike(userId, albumId);
+    
+        const response = res.response({
+          status: 'success',
+          message: 'Album berhasil disukai',
+        });
+        response.code(201);
+        return response; 
+    }
+    
+    async getLikeAlbumByIdHandler(request, res) {
+       const { id: albumId } = request.params;
+    
+       const isExist = await this._service.isAlbumExist(albumId);
+    
+       if (!isExist) {
+         throw new NotFoundError('Album tidak ditemukan');
+       }
+    
+       const { source, count } = await this._userAlbumLikesService.countLikesByAlbumId(albumId);
+    
+       const response = res.response({
+         status: 'success',
+         data: {
+           likes: count,
+         },
+       });
+       response.header('X-Data-Source', source);
+       return response;
+    }
+    
+    async deleteLikeAlbumByIdHandler(request) {
+       const { id: albumId } = request.params;
+       const { userId } = request.auth.credentials;
+    
+       const isExist = await this._service.isAlbumExist(albumId);
+    
+       if (!isExist) {
+         throw new NotFoundError('Album tidak ditemukan');
+       }
+    
+       await this._userAlbumLikesService.deleteUserAlbumLike(userId, albumId);
+    
+       return {
+         status: 'success',
+         message: 'Album berhasil dihapus dari daftar suka',
+       };
+    }
 }
 module.exports = AlbumsHandler;

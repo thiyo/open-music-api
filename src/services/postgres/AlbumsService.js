@@ -103,7 +103,6 @@ class AlbumsService{
 
     const { rows } = await this._pool.query(query);
 
-    
     if (!rows.length) {
       throw new NotFoundError('Album tidak ditemukan', 404);
     }
